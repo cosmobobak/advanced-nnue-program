@@ -1,0 +1,4 @@
+Current models use multi-layer perceptrons. They have a feature transformer (large first layer), which generates a feature-vector.
+They then have one or more narrow output layers from the feature vector to the output.
+These input (FT) and output layers are then multiplied as in Mixture of Experts.
+Because any given input layer must be able to co-ordinate with any given output layerstack, the network learns robust feature-vectors.

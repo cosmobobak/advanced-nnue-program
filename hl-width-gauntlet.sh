@@ -1,0 +1,22 @@
+#!/bin/bash
+cutechess-cli \
+    -engine cmd=viris/viridithas32 name=32 \
+    -engine cmd=viris/viridithas64 name=64 \
+    -engine cmd=viris/viridithas128 name=128 \
+    -engine cmd=viris/viridithas256 name=256 \
+    -engine cmd=viris/viridithas512 name=512 \
+    -engine cmd=viris/viridithas768 name=768 \
+    -engine cmd=viris/viridithas1024 name=1024 \
+    -engine cmd=viris/viridithas1536 name=1536 \
+    -engine cmd=viris/viridithas2048 name=2048 \
+    -engine cmd=viris/viridithas4096 name=4096 \
+    -engine cmd=viris/viridithas-master name=master \
+    -each tc=inf nodes=25000 option.Hash=32 proto=uci timemargin=400 \
+    -rounds 100 \
+    -concurrency 40 \
+    -openings file=Pohl.epd order=random format=epd \
+    -repeat \
+    -games 2 \
+    -ratinginterval 30 \
+    -pgnout net-size-guantlet.pgn \
+    -recover

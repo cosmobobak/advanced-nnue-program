@@ -1,0 +1,97 @@
+    1* 
+    2  kaggle datasets download -d cosmobobak/viridithas-binpacks-2024-07-12
+    3  apt install clang
+    4  apt install pip
+    5  pip install kaggle
+    6  kaggle datasets download -d cosmobobak/viridithas-binpacks-2024-07-12
+    7  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    8  . "$HOME/.cargo/env" 
+    9  git clone https://github.com/cosmobobak/bullet
+   10  export CUDA_PATH=/usr/local/cuda-12.0
+   11* 
+   12  RUSTFLAGS="-Ctarget-cpu=native" cargo b -r --all
+   13  apt install pkg-config
+   14  RUSTFLAGS="-Ctarget-cpu=native" cargo b -r --all
+   15  apt install iosevka
+   16  pkg-config --libs --cflags fontconfig
+   17  apt install libfontconfig1-dev libfontconfig
+   18  pkg-config --libs --cflags fontconfig
+   19  RUSTFLAGS="-Ctarget-cpu=native" cargo b -r --all
+   20  cd ..
+   21  git clone https://github.com/cosmobobak/viridithas
+   22  cd viridithas
+   23  RUSTFLAGS="-Ctarget-cpu=native" cargo b -r --all
+   24  cat .github/workflows/rust.yml 
+   25  curl -s "https://api.github.com/repos/cosmobobak/viridithas-networks/releases/latest" | grep -o '"browser_download_url": "[^"]*' | awk -F'"' '{print $4}' | xargs -L 1 wget -O viridithas.nnue
+   26  RUSTFLAGS="-Ctarget-cpu=native" cargo b -r --all
+   27  cd
+   28  nano decompress.sh
+   29  apt install nano
+   30  nano decompress.sh
+   31  ls -l
+   32  unzip -v viridithas-binpacks-2024-07-12.zip 
+   33  apt install zip unzip
+   34  unzip -v viridithas-binpacks-2024-07-12.zip 
+   35  l
+   36  unzip --help
+   37  unzip viridithas-binpacks-2024-07-12.zip 
+   38  ls
+   39  ls -l
+   40  mkdir binpacks
+   41  mv run_2024-0* binpacks/
+   42  ls -l
+   43  ls -ls binpacks/ | wc -l
+   44  ls -ls binpacks/
+   45  chmod +x decompress.sh 
+   46  ./decompress.sh 
+   47  ./decompress.sh binpacks dataset.bin
+   48  ls -l
+   49  nano decompress.sh 
+   50  ./decompress.sh binpacks dataset.bin
+   51  ls -l /tmp/tmux-0/default 
+   52  nano decompress.sh 
+   53  rm decompress.sh 
+   54  nano decompress.sh 
+   55  chmod +x decompress.sh 
+   56  ./decompress.sh binpacks dataset.bin viridithas/target/release/viridithas bullet/target/release/bullet-utils
+   57  nano decompress.sh 
+   58  ./decompress.sh binpacks dataset.bin viridithas/target/release/viridithas bullet/target/release/bullet-utils
+   59  nano decompress.sh 
+   60  apt install parallel
+   61  ./decompress.sh binpacks dataset.bin viridithas/target/release/viridithas bullet/target/release/bullet-utils
+   62  ls -l
+   63  nano decompress.sh 
+   64  ./decompress.sh binpacks dataset.bin viridithas/target/release/viridithas bullet/target/release/bullet-utils
+   65  nano decompress.sh 
+   66  cat decompress.sh 
+   67  rm decompress.sh 
+   68  cat decompress.sh 
+   69  nano decompress.sh 
+   70  chmod +x decompress.sh 
+   71  ./decompress.sh binpacks dataset.bin viridithas/target/release/viridithas bullet/target/release/bullet-utils
+   72  ls -l /tmp/
+   73  ls -l /tmp/tmp.uwyedWopXS/
+   74  nano decompress.sh 
+   75  apt install btop
+   76  apt install htop
+   77  htop
+   78  ./decompress.sh binpacks dataset.bin viridithas/target/release/viridithas bullet/target/release/bullet-utils
+   79  ls -l
+   80  mkdir bullet/data
+   81  cd bullet/
+   82  mv ../dataset.bin data/
+   83  git checkout annuep-replicate-test
+   84  git pull
+   85  git checkout annue-replicate-test
+   86  nano examples/viridithas.rs 
+   87  cargo r -r --example viridithas --features cuda
+   88  git pull
+   89  git diff
+   90  git stash
+   91  git pull
+   92  nano examples/viridithas.rs 
+   93  cargo r -r --example viridithas --features cuda
+   94  apt install magic-wormhole
+   95  wormhole send checkpoints/viridithas-annuep-60
+   96  history
+   97  history > commands.txt

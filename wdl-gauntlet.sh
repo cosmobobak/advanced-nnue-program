@@ -1,0 +1,22 @@
+#!/bin/bash
+cutechess-cli \
+    -engine cmd=test-binaries/wdl-0.0 name=nn256-wdl-0.0 \
+    -engine cmd=test-binaries/wdl-0.1 name=nn256-wdl-0.1 \
+    -engine cmd=test-binaries/wdl-0.2 name=nn256-wdl-0.2 \
+    -engine cmd=test-binaries/wdl-0.3 name=nn256-wdl-0.3 \
+    -engine cmd=test-binaries/wdl-0.4 name=nn256-wdl-0.4 \
+    -engine cmd=test-binaries/wdl-0.5 name=nn256-wdl-0.5 \
+    -engine cmd=test-binaries/wdl-0.6 name=nn256-wdl-0.6 \
+    -engine cmd=test-binaries/wdl-0.7 name=nn256-wdl-0.7 \
+    -engine cmd=test-binaries/wdl-0.8 name=nn256-wdl-0.8 \
+    -engine cmd=test-binaries/wdl-0.9 name=nn256-wdl-0.9 \
+    -engine cmd=test-binaries/wdl-1.0 name=nn256-wdl-1.0 \
+    -each tc=inf nodes=25000 option.Hash=8 proto=uci timemargin=400 \
+    -rounds 100 \
+    -concurrency 40 \
+    -openings file=UHO_4060_v2.epd order=random format=epd \
+    -repeat \
+    -games 2 \
+    -ratinginterval 30 \
+    -pgnout wdl-guantlet.pgn \
+    -recover
