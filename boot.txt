@@ -1,11 +1,11 @@
 apt install clang pip pkg-config libfontconfig1-dev libfontconfig nano zip unzip htop magic-wormhole parallel libssl-dev
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 . "$HOME/.cargo/env"
-cargo install ripunzip
 export CUDA_PATH=/usr/local/cuda-12.0
 git clone https://github.com/cosmobobak/bullet
 git clone https://github.com/cosmobobak/viridithas
 git clone https://github.com/jnlt3/marlinflow
-curl -s "https://api.github.com/repos/cosmobobak/viridithas-networks/releases/latest" | grep -o '"browser_download_url": "[^"]*' | awk -F'"' '{print $4}' | xargs -L 1 wget -O viridithas.nnue.zst
+cargo install ripunzip
 RUSTFLAGS="-Ctarget-cpu=native" cargo b -r --all
+curl -s "https://api.github.com/repos/cosmobobak/viridithas-networks/releases/latest" | grep -o '"browser_download_url": "[^"]*' | awk -F'"' '{print $4}' | xargs -L 1 wget -O viridithas.nnue.zst
 curl -L -o viridithas-binpacks-2024-07-12.zip https://www.kaggle.com/api/v1/datasets/download/cosmobobak/viridithas-binpacks-2024-07-12
