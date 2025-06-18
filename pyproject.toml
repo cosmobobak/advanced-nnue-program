@@ -10,4 +10,5 @@ dependencies = [
     "numpy>=2.2.6",
     "pandas>=2.2.3",
     "pip>=25.1.1",
+    "qbstyles>=0.1.4",
 ]
