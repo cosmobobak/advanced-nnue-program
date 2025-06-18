@@ -30,6 +30,22 @@ plt.errorbar(ltc_version_numbers, ltc_elo, yerr=ltc_err,
              marker='s', capsize=5, capthick=2, label='LTC (40.0+0.40s)', 
              color='cyan', linewidth=2, markersize=8, elinewidth=2)
 
+# Add quadratic fit for fixed-nodes data
+fixed_nodes_fit = np.polyfit(version_numbers, fixed_nodes_elo, 2)
+fixed_nodes_poly = np.poly1d(fixed_nodes_fit)
+x_smooth_fixed = np.linspace(min(version_numbers), max(version_numbers), 100)
+y_smooth_fixed = fixed_nodes_poly(x_smooth_fixed)
+plt.plot(x_smooth_fixed, y_smooth_fixed, '--', color='darkorange', 
+         linewidth=2.5, alpha=0.8, label='Fixed-nodes quadratic fit')
+
+# Add quadratic fit for LTC data
+ltc_fit = np.polyfit(ltc_version_numbers, ltc_elo, 2)
+ltc_poly = np.poly1d(ltc_fit)
+x_smooth_ltc = np.linspace(min(ltc_version_numbers), max(ltc_version_numbers), 100)
+y_smooth_ltc = ltc_poly(x_smooth_ltc)
+plt.plot(x_smooth_ltc, y_smooth_ltc, '--', color='dodgerblue', 
+         linewidth=2.5, alpha=0.8, label='LTC quadratic fit')
+
 # Customize the plot
 plt.xlabel('WDL blend', fontsize=12)
 plt.ylabel('Elo', fontsize=12)
@@ -66,9 +82,8 @@ for i, v in enumerate(versions):
 
 print("\nLTC Elo progression (vs. delenda):")
 print("-" * 50)
-for i, v in enumerate(versions[:4]):
+for i, v in enumerate(versions[:5]):
     print(f"{v}: {ltc_elo[i]:>6.2f} ± {ltc_err[i]:.2f}")
-print("basilisk.8: No data")
 print("basilisk.9: No data")
 
 # Calculate and print trends
@@ -76,7 +91,22 @@ print("\nTrend Analysis:")
 print("-" * 50)
 print(f"Fixed-nodes: {fixed_nodes_elo[0]:.2f} → {fixed_nodes_elo[-1]:.2f} "
       f"(Δ = {fixed_nodes_elo[-1] - fixed_nodes_elo[0]:.2f} Elo)")
-print(f"LTC (v4-v7): {ltc_elo[0]:.2f} → {ltc_elo[-1]:.2f} "
+print(f"LTC (v4-v8): {ltc_elo[0]:.2f} → {ltc_elo[-1]:.2f} "
       f"(Δ = {ltc_elo[-1] - ltc_elo[0]:.2f} Elo)")
+
+# Print quadratic fit equations
+print("\nQuadratic Fit Equations:")
+print("-" * 50)
+print(f"Fixed-nodes: y = {fixed_nodes_fit[0]:.2f}x² + {fixed_nodes_fit[1]:.2f}x + {fixed_nodes_fit[2]:.2f}")
+print(f"LTC: y = {ltc_fit[0]:.2f}x² + {ltc_fit[1]:.2f}x + {ltc_fit[2]:.2f}")
+
+# Calculate R-squared values
+fixed_nodes_r2 = 1 - (np.sum((fixed_nodes_elo - fixed_nodes_poly(version_numbers))**2) / 
+                      np.sum((fixed_nodes_elo - np.mean(fixed_nodes_elo))**2))
+ltc_r2 = 1 - (np.sum((ltc_elo - ltc_poly(ltc_version_numbers))**2) / 
+              np.sum((ltc_elo - np.mean(ltc_elo))**2))
+
+print(f"\nFixed-nodes R² = {fixed_nodes_r2:.4f}")
+print(f"LTC R² = {ltc_r2:.4f}")
 
 plt.savefig("wdl-blend.png")
