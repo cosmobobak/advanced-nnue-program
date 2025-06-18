@@ -12,10 +12,10 @@ version_numbers = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 fixed_nodes_elo = [0.71, -0.31, -4.85, -13.95, -19.27, -26.61]
 fixed_nodes_err = [0.75, 1.76, 3.74, 5.93, 7.09, 8.26]
 
-# LTC Elo values and errors (missing data for basilisk.8 and basilisk.9)
-ltc_version_numbers = [0.4, 0.5, 0.6, 0.7, 0.8]
-ltc_elo = [-8.80, -7.40, -5.47, -5.77, -10.67]
-ltc_err = [4.35, 4.00, 3.55, 3.59, 4.86]
+# LTC Elo values and errors (95% confidence intervals)
+ltc_version_numbers = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+ltc_elo = [-8.80, -7.40, -5.47, -5.77, -10.67, -22.81]
+ltc_err = [4.35, 4.00, 3.55, 3.59, 4.86, 6.95]
 
 # Create the plot
 plt.figure(figsize=(16, 12))
@@ -33,18 +33,18 @@ plt.errorbar(ltc_version_numbers, ltc_elo, yerr=ltc_err,
 # Add quadratic fit for fixed-nodes data
 fixed_nodes_fit = np.polyfit(version_numbers, fixed_nodes_elo, 2)
 fixed_nodes_poly = np.poly1d(fixed_nodes_fit)
-x_smooth_fixed = np.linspace(min(version_numbers), max(version_numbers), 100)
+x_smooth_fixed = np.linspace(min(version_numbers) - 0.1, max(version_numbers) + 0.1, 100)
 y_smooth_fixed = fixed_nodes_poly(x_smooth_fixed)
 plt.plot(x_smooth_fixed, y_smooth_fixed, '--', color='darkorange', 
-         linewidth=2.5, alpha=0.8, label='Fixed-nodes quadratic fit')
+         linewidth=2.5, alpha=0.2, label='Fixed-nodes quadratic fit')
 
 # Add quadratic fit for LTC data
 ltc_fit = np.polyfit(ltc_version_numbers, ltc_elo, 2)
 ltc_poly = np.poly1d(ltc_fit)
-x_smooth_ltc = np.linspace(min(ltc_version_numbers), max(ltc_version_numbers), 100)
+x_smooth_ltc = np.linspace(min(ltc_version_numbers) - 0.1, max(ltc_version_numbers) + 0.1, 100)
 y_smooth_ltc = ltc_poly(x_smooth_ltc)
 plt.plot(x_smooth_ltc, y_smooth_ltc, '--', color='dodgerblue', 
-         linewidth=2.5, alpha=0.8, label='LTC quadratic fit')
+         linewidth=2.5, alpha=0.2, label='LTC quadratic fit')
 
 # Customize the plot
 plt.xlabel('WDL blend', fontsize=12)
