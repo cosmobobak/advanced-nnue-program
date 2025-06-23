@@ -2,7 +2,7 @@
 
 # Check if the required number of arguments is provided
 if [ "$#" -lt 4 ]; then
-    echo "Usage: $0 <input_directory> <output_file> <viridithas_path> <marlinflow_utils_path>"
+    echo "Usage: $0 <input_directory> <output_file> <viridithas_path> <marlinflow_utils_path> [max_jobs]"
     exit 1
 fi
 
@@ -10,6 +10,7 @@ input_dir="$1"
 output_file="$2"
 viridithas_path="$3"
 marlinflow_utils_path="$4"
+max_jobs="${5:-$(nproc)}"
 temp_dir=$(mktemp -d)
 
 # Function to clean up temporary files
@@ -44,7 +45,7 @@ export viridithas_path
 export marlinflow_utils_path
 
 # Process all binpacks in parallel
-find "$input_dir" -name "*.bin" | parallel process_file
+find "$input_dir" -name "*.bin" | parallel -j "$max_jobs" process_file
 
 # Interleave all shuffled files
 shuffled_files=("$temp_dir"/*_shuffled.bin)
