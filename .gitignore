@@ -3,3 +3,5 @@ venv
 wdl-binaries
 viris
 correlations.txt
+correlations.npy
+visit_order.txt
