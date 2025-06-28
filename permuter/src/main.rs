@@ -177,9 +177,13 @@ fn simulated_annealing(
         let operation = rng.random_range(0..mutators.len());
         let u = mutators[operation](&mut rng, order);
         let new_cost = cost_function(order, matrix);
-        let improvement = current_cost as f64 - new_cost as f64;
+        let delta_energy = new_cost as f64 - current_cost as f64;
 
-        if improvement > 0.0 || (improvement / temp).exp() > rng.random::<f64>() {
+        // if energy has gone up, then exp(-delta_energy / temp) is greater than 1
+        // otherwise, it is some number between 0 and 1. We always accept edits
+        // that lower the energy, and accept some that raise it based on the temperature.
+        // This is the essence of simulated annealing.
+        if delta_energy < 0.0 || (-delta_energy / temp).exp() > rng.random::<f64>() {
             // Accept the new order
             current_cost = new_cost;
             if current_cost < best_cost {
