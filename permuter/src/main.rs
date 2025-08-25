@@ -1,4 +1,9 @@
-// #![warn(clippy::all, clippy::pedantic, clippy::nursery)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
+#![allow(
+    clippy::cast_precision_loss,
+    clippy::while_float,
+    clippy::cast_possible_truncation
+)]
 
 use std::{cmp::Reverse, time::Instant};
 
@@ -21,11 +26,11 @@ fn cost_function(order: &[u16], matrix: &Matrix) -> u64 {
             let matrix_row = &matrix.data[order[i] as usize][..];
             let cost_a = order[i + BLOCK_SIZE..]
                 .iter()
-                .map(|&j| matrix_row[j as usize] as u64)
+                .map(|&j| u64::from(matrix_row[j as usize]))
                 .sum::<u64>();
             let cost_b = order[..i - BLOCK_SIZE]
                 .iter()
-                .map(|&j| matrix_row[j as usize] as u64)
+                .map(|&j| u64::from(matrix_row[j as usize]))
                 .sum::<u64>();
             cost_a + cost_b
         })
@@ -50,14 +55,14 @@ fn cost_difference_for_swap(order: &[u16], matrix: &Matrix, i: usize, j: usize) 
         let affects_j = (j >= pos + BLOCK_SIZE || j < pos - BLOCK_SIZE) && pos != j;
 
         if affects_i {
-            let old_cost = matrix.data[elem_at_pos][order[i] as usize] as i64;
-            let new_cost = matrix.data[elem_at_pos][order[j] as usize] as i64;
+            let old_cost = i64::from(matrix.data[elem_at_pos][order[i] as usize]);
+            let new_cost = i64::from(matrix.data[elem_at_pos][order[j] as usize]);
             diff += new_cost - old_cost;
         }
 
         if affects_j {
-            let old_cost = matrix.data[elem_at_pos][order[j] as usize] as i64;
-            let new_cost = matrix.data[elem_at_pos][order[i] as usize] as i64;
+            let old_cost = i64::from(matrix.data[elem_at_pos][order[j] as usize]);
+            let new_cost = i64::from(matrix.data[elem_at_pos][order[i] as usize]);
             diff += new_cost - old_cost;
         }
 
@@ -69,8 +74,8 @@ fn cost_difference_for_swap(order: &[u16], matrix: &Matrix, i: usize, j: usize) 
 
             for (k, o_k) in order.iter().enumerate() {
                 if k >= pos + BLOCK_SIZE || k < pos.saturating_sub(BLOCK_SIZE) {
-                    diff -= matrix.data[old_elem][*o_k as usize] as i64;
-                    diff += matrix.data[new_elem][*o_k as usize] as i64;
+                    diff -= i64::from(matrix.data[old_elem][*o_k as usize]);
+                    diff += i64::from(matrix.data[new_elem][*o_k as usize]);
                 }
             }
         }
@@ -98,7 +103,7 @@ fn greedy_sort(order: &mut [u16], matrix: &Matrix) {
                 cost = cost.wrapping_add_signed(delta);
                 changed = true;
                 if improvements % 1000 == 0 {
-                    println!("Improvement #{}: cost = {}", improvements, cost);
+                    println!("Improvement #{improvements}: cost = {cost}");
                 }
                 improvements += 1;
             }
@@ -111,7 +116,7 @@ fn greedy_sort(order: &mut [u16], matrix: &Matrix) {
         iters,
         cost
     );
-    println!("Final order: {:?}", order);
+    println!("Final order: {order:?}");
 }
 
 fn swap_two(rng: &mut ThreadRng, order: &mut [u16]) -> (usize, usize) {
@@ -125,7 +130,7 @@ fn swap_two(rng: &mut ThreadRng, order: &mut [u16]) -> (usize, usize) {
     (i, j)
 }
 
-fn undo_swap(order: &mut [u16], (i, j): (usize, usize)) {
+const fn undo_swap(order: &mut [u16], (i, j): (usize, usize)) {
     order.swap(i, j);
 }
 
@@ -190,7 +195,7 @@ fn simulated_annealing(
                 best_cost = current_cost;
                 best_order.copy_from_slice(order);
                 improvements += 1;
-                println!("New best cost: {}", best_cost);
+                println!("New best cost: {best_cost}");
             }
         } else {
             // Undo the operation
@@ -208,7 +213,7 @@ fn simulated_annealing(
         improvements,
         Instant::now().elapsed().as_secs_f64()
     );
-    println!("Best order: {:?}", best_order);
+    println!("Best order: {best_order:?}");
 }
 
 fn main() -> anyhow::Result<()> {
