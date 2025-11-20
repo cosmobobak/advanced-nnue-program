@@ -68,6 +68,12 @@ def plot_evaluation_distribution(csv_file: str = "eval_counts.csv") -> None:
         # Remove any NaN values
         df = df.dropna()
 
+        # Take absolute values of all evals for plotting
+        df["eval"] = df["eval"].abs()
+
+        # remove evals with value < 5
+        df = df[df["eval"] >= 5]
+
         plt.figure(figsize=(14, 8))
 
         # Create histogram-like plot
@@ -95,7 +101,7 @@ def plot_evaluation_distribution(csv_file: str = "eval_counts.csv") -> None:
         # Limit x-axis to reasonable range for visibility
         # eval_range = df["eval"].max() - df["eval"].min()
         # if eval_range > 2000:
-        plt.xlim(-5_000, 5_000)
+        plt.xlim(-1, 5_000)
 
         # x-axis logarithmic scale if needed
 
@@ -387,16 +393,18 @@ def main():
     print("Setting up plot style...")
     setup_plot_style()
 
-    print("Generating individual plots...")
-    plot_length_distribution()
-    plot_evaluation_distribution()
-    plot_material_distribution()
-    plot_piece_square_distribution()
-    plot_king_position_distribution()
-    plot_opening_evaluation_distribution()
+    csv_path = "eval_counts.csv"
 
-    print("Generating summary plot...")
-    create_summary_plot()
+    # print("Generating individual plots...")
+    # plot_length_distribution()
+    plot_evaluation_distribution(csv_path)
+    # plot_material_distribution()
+    # plot_piece_square_distribution()
+    # plot_king_position_distribution()
+    # plot_opening_evaluation_distribution()
+
+    # print("Generating summary plot...")
+    # create_summary_plot()
 
     print("All plots have been generated and saved!")
 

@@ -11,4 +11,5 @@ dependencies = [
     "pandas>=2.2.3",
     "pip>=25.1.1",
     "qbstyles>=0.1.4",
+    "seaborn>=0.13.2",
 ]
