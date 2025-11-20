@@ -8,7 +8,7 @@
 use std::{cmp::Reverse, time::Instant};
 
 use anyhow::{Context, ensure};
-use rand::{Rng, rngs::ThreadRng};
+use rand::{Rng, SeedableRng};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 #[derive(Debug, Clone, serde::Deserialize)]
@@ -85,11 +85,11 @@ fn cost_difference_for_swap(order: &[u16], matrix: &Matrix, i: usize, j: usize) 
 }
 
 fn greedy_sort(order: &mut [u16], matrix: &Matrix) {
+    let start = Instant::now();
     let mut changed = true;
     let mut cost = cost_function(order, matrix);
     let mut improvements = 0;
     let mut iters = 0u64;
-    let start = Instant::now();
     while changed {
         changed = false;
         for i in 0..order.len() - 1 {
@@ -102,24 +102,17 @@ fn greedy_sort(order: &mut [u16], matrix: &Matrix) {
                 order.swap(i, j);
                 cost = cost.wrapping_add_signed(delta);
                 changed = true;
-                if improvements % 1000 == 0 {
-                    println!("Improvement #{improvements}: cost = {cost}");
-                }
                 improvements += 1;
             }
         }
     }
     println!(
-        "Greedy sort completed in {:.2}s with {} improvements and {} iterations. Final cost: {}",
+        "Greedy sort completed in {:.2}s with {improvements} improvements and {iters} iterations. Final cost: {cost}",
         start.elapsed().as_secs_f64(),
-        improvements,
-        iters,
-        cost
     );
-    println!("Final order: {order:?}");
 }
 
-fn swap_two(rng: &mut ThreadRng, order: &mut [u16]) -> (usize, usize) {
+fn swap_two(rng: &mut impl Rng, order: &mut [u16]) -> (usize, usize) {
     let len = order.len();
     let i = rng.random_range(0..len);
     let mut j = rng.random_range(0..len);
@@ -134,7 +127,7 @@ const fn undo_swap(order: &mut [u16], (i, j): (usize, usize)) {
     order.swap(i, j);
 }
 
-fn reverse_segment(rng: &mut ThreadRng, order: &mut [u16]) -> (usize, usize) {
+fn reverse_segment(rng: &mut impl Rng, order: &mut [u16]) -> (usize, usize) {
     let len = order.len();
     let mut start = rng.random_range(0..len);
     let mut end = rng.random_range(0..len);
@@ -152,7 +145,7 @@ fn undo_reverse_segment(order: &mut [u16], (start, end): (usize, usize)) {
     order[start..=end].reverse();
 }
 
-fn swap_local(rng: &mut ThreadRng, order: &mut [u16]) -> (usize, usize) {
+fn swap_local(rng: &mut impl Rng, order: &mut [u16]) -> (usize, usize) {
     let len = order.len();
     let i = rng.random_range(0..len - 1);
     let j = i + 1;
@@ -163,11 +156,12 @@ fn swap_local(rng: &mut ThreadRng, order: &mut [u16]) -> (usize, usize) {
 fn simulated_annealing(
     order: &mut [u16],
     matrix: &Matrix,
+    rng: &mut impl Rng,
     initial_temp: f64,
     cooling_rate: f64,
     min_temp: f64,
 ) {
-    let mut rng = rand::rng();
+    let start = Instant::now();
     let mut current_cost = cost_function(order, matrix);
     let mut best_cost = current_cost;
     let mut best_order = order.to_vec();
@@ -180,7 +174,7 @@ fn simulated_annealing(
 
     while temp > min_temp {
         let operation = rng.random_range(0..mutators.len());
-        let u = mutators[operation](&mut rng, order);
+        let u = mutators[operation](rng, order);
         let new_cost = cost_function(order, matrix);
         let delta_energy = new_cost as f64 - current_cost as f64;
 
@@ -195,7 +189,6 @@ fn simulated_annealing(
                 best_cost = current_cost;
                 best_order.copy_from_slice(order);
                 improvements += 1;
-                println!("New best cost: {best_cost}");
             }
         } else {
             // Undo the operation
@@ -207,16 +200,14 @@ fn simulated_annealing(
     }
     order.copy_from_slice(&best_order);
     println!(
-        "Final cost: {}, iterations: {}, improvements: {}, time: {:.2}s",
-        best_cost,
-        iterations,
-        improvements,
-        Instant::now().elapsed().as_secs_f64()
+        "Simulated annealing completed in {:.2}s with {improvements} improvements and {iterations} iterations. Final cost: {best_cost}",
+        start.elapsed().as_secs_f64()
     );
-    println!("Best order: {best_order:?}");
 }
 
 fn main() -> anyhow::Result<()> {
+    let start = Instant::now();
+
     let matrix =
         std::fs::read_to_string("correlations.json").context("Failed to read correlations.json")?;
     let matrix =
@@ -227,6 +218,8 @@ fn main() -> anyhow::Result<()> {
         "Matrix must be square"
     );
 
+    let mut rng = rand::rngs::SmallRng::seed_from_u64(42);
+
     let diag = matrix
         .data
         .iter()
@@ -236,6 +229,7 @@ fn main() -> anyhow::Result<()> {
 
     let default_order = (0..diag.len() as u16).collect::<Vec<_>>();
 
+    // sorting by absolute counts is already a very good heuristic.
     let mut sorted_indices = default_order.clone();
     sorted_indices.sort_unstable_by_key(|&i| Reverse(diag[i as usize]));
 
@@ -251,35 +245,23 @@ fn main() -> anyhow::Result<()> {
     // let mut greedy_order = default_order.clone();
     // greedy_sort(&mut greedy_order, &matrix);
 
-    // println!(
-    //     "Cost of greedy sorted order: {}",
-    //     cost_function(&greedy_order, &matrix)
-    // );
-
     let mut annealed_order = sorted_indices.clone();
     simulated_annealing(
         &mut annealed_order,
         &matrix,
-        1000.0,  // Initial temperature
-        0.99999, // Cooling rate
-        1e-6,    // Minimum temperature
-    );
-
-    println!(
-        "Cost of simulated annealing order: {}",
-        cost_function(&annealed_order, &matrix)
+        &mut rng,
+        1000.0, // Initial temperature
+        0.9999, // Cooling rate
+        1e-6,   // Minimum temperature
     );
 
     greedy_sort(&mut annealed_order, &matrix);
 
-    println!(
-        "Cost after greedy sort: {}",
-        cost_function(&annealed_order, &matrix)
-    );
-
     // Save the final order to a file
     std::fs::write("final_order.json", serde_json::to_string(&annealed_order)?)
         .context("Failed to write final_order.json")?;
+
+    println!("Total time: {:.2}s", start.elapsed().as_secs_f64());
 
     Ok(())
 }
