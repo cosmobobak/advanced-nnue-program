@@ -211,7 +211,7 @@ fn simulated_annealing(
         temp *= cooling_rate;
         iterations += 1;
 
-        if iterations % 10_000 == 0 {
+        if iterations.is_multiple_of(1_000) {
             pb.set_position(iterations);
             pb.set_message(format!("{temp:.2e}"));
         }
