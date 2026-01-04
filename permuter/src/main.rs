@@ -8,6 +8,7 @@
 use std::{cmp::Reverse, time::Instant};
 
 use anyhow::{Context, ensure};
+use indicatif::{ProgressBar, ProgressStyle};
 use rand::{Rng, SeedableRng};
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
@@ -166,11 +167,23 @@ fn simulated_annealing(
     let mut best_cost = current_cost;
     let mut best_order = order.to_vec();
     let mut temp = initial_temp;
-    let mut iterations = 0;
+    let mut iterations = 0u64;
     let mut improvements = 0;
 
     let mutators = [swap_local, swap_two, reverse_segment];
     let reversers = [undo_swap, undo_swap, undo_reverse_segment];
+
+    // Calculate total iterations: initial_temp * cooling_rate^n = min_temp
+    // => n = log(min_temp / initial_temp) / log(cooling_rate)
+    let total_iterations = ((min_temp / initial_temp).ln() / cooling_rate.ln()).ceil() as u64;
+
+    let pb = ProgressBar::new(total_iterations);
+    pb.set_style(
+        ProgressStyle::default_bar()
+            .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} (T={msg}) ETA: {eta}")
+            .expect("valid template")
+            .progress_chars("#>-"),
+    );
 
     while temp > min_temp {
         let operation = rng.random_range(0..mutators.len());
@@ -197,7 +210,14 @@ fn simulated_annealing(
 
         temp *= cooling_rate;
         iterations += 1;
+
+        if iterations % 10_000 == 0 {
+            pb.set_position(iterations);
+            pb.set_message(format!("{temp:.2e}"));
+        }
     }
+
+    pb.finish_and_clear();
     order.copy_from_slice(&best_order);
     println!(
         "Simulated annealing completed in {:.2}s with {improvements} improvements and {iterations} iterations. Final cost: {best_cost}",
@@ -250,9 +270,9 @@ fn main() -> anyhow::Result<()> {
         &mut annealed_order,
         &matrix,
         &mut rng,
-        1000.0, // Initial temperature
-        0.9999, // Cooling rate
-        1e-6,   // Minimum temperature
+        1000.0,   // Initial temperature
+        0.999999, // Cooling rate
+        1e-6,     // Minimum temperature
     );
 
     greedy_sort(&mut annealed_order, &matrix);
