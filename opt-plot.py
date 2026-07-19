@@ -5,6 +5,8 @@ import numpy as np
 
 plt.rcParams["font.family"] = "TX-02"
 
+plt.style.use("dark_background")
+
 CHECKPOINT_DIR = "/home/cosmo/bullet/checkpoints"
 LOG_FILE = "log.txt"
 
@@ -172,7 +174,7 @@ def draw_baseline(subplot, stage: str, data: dict[str, tuple[np.ndarray, np.ndar
         delta = np.interp(grid, indexes, losses) - base_on_grid
         draw_single_curve(subplot, name, grid, delta)
 
-    subplot.axhline(0.0, color="black", lw=0.8, ls="--", label=f"{BASELINE} (baseline)")
+    subplot.axhline(0.0, color="w", lw=0.8, ls="--", label=f"{BASELINE} (baseline)")
     subplot.set_ylabel(f"loss − {BASELINE}")
 
 
@@ -184,6 +186,7 @@ def draw(subplot, stage: str, data: dict[str, tuple[np.ndarray, np.ndarray]]):
     else:
         draw_baseline(subplot, stage, data)
 
+    subplot.grid(False)
     subplot.set_title(stage)
     subplot.set_xlabel("superbatch")
     subplot.legend(fontsize="small")
