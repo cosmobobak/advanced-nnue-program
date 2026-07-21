@@ -56,7 +56,7 @@ SKIP_DATAPOINTS: int = 50
 
 SHOW_RAW: bool = True
 
-RENORMALISE_FRACTIONAL: bool = False
+RENORMALISE_FRACTIONAL: bool = True
 
 LOG_Y: bool = True
 
@@ -234,7 +234,7 @@ def draw(subplot, stage: str, data: dict[str, tuple[np.ndarray, np.ndarray]]):
 
     subplot.grid(False)
     subplot.set_title(stage)
-    subplot.set_xlabel("superbatch")
+    subplot.set_xlabel("superbatch" if not RENORMALISE_FRACTIONAL else "training run progress")
     subplot.ticklabel_format(axis="x", style="sci", scilimits=(0, 4))
 
 
