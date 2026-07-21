@@ -7,8 +7,15 @@ plt.rcParams["font.family"] = "TX-02"
 
 plt.style.use("dark_background")
 
-CHECKPOINT_DIR = "/home/cosmo/bullet/checkpoints"
+CHECKPOINT_DIR = "/home/cosmo/bullet/hp-sweep"
 LOG_FILE = "log.txt"
+
+# this is dependent on in-trainer config, and may need changed.
+# it’s derived from taking a contingent default batches-per of
+# 6104 and dividing by four.
+BATCHES_PER_SB = 1526
+# similarly so.
+BATCH_INCREMENT = 32
 
 SUFFIXES: dict[str, str] = {
     "-s0": "Stage 0",
@@ -16,22 +23,35 @@ SUFFIXES: dict[str, str] = {
     "-s2": "Stage 2",
 }
 
+# TESTS: list[str] = [
+#     "excitement-0.2-lr1",
+#     "excitement-0.2-lr0.5",
+#     "excitement-0.2-lr0.25",
+#     "excitement-0.2-lr0.125",
+#     "excitement-0.2-lr2",
+#     "excitement-0.2-lr4",
+# ]
+
 TESTS: list[str] = [
-    "sandhi",
-    "sapient",
-    "bicameral",
-    "circumflex",
-    "magnetar",
+    "juice-0.05",
+    "juice-0.1",
+    "juice-0.2",
+    "juice-0.5",
+    "juice-1",
+    "juice-2",
+    # "juice-4",
 ]
 
-# BASELINE: str | None = None
-BASELINE: str | None = TESTS[0]
+BASELINE: str | None = None
+# BASELINE: str | None = TESTS[0]
 
 EMA_ALPHA: float = 0.005
 
-SKIP_SUPERBATCHES: int = 0
+SKIP_DATAPOINTS: int = 50
 
-SHOW_RAW: bool = False
+SHOW_RAW: bool = True
+
+RENORMALISE_FRACTIONAL: bool = False
 
 # the log format is <superbatch>:<batch-within-superbatch>:<loss>
 
@@ -60,29 +80,6 @@ def find_match(file_substring: str) -> str:
     )
 
 
-# figure out how many batches run within each superbatch so we’re robust to batch size edits
-def find_batch_per(file_substring: str) -> tuple[int, int]:
-    max_batch = 0
-    increment = None
-    file = f"{find_match(file_substring)}/{LOG_FILE}"
-    for i, line in enumerate(open(file, "r", encoding="utf-8").readlines()):
-        sb, b, loss = line.split(",")
-        sb, b = int(sb), int(b)
-        # read file ’til superbatch = 1
-        if sb == 2:
-            break
-        max_batch = max(max_batch, b)
-        if i == 1:
-            increment = b
-    assert increment is not None, f"no lines in {file}"
-    return max_batch + increment, increment
-
-
-BATCHES_PER_SB, LOG_INCREMENT = find_batch_per(
-    next(next(path for path in path_list.values()) for path_list in FILE_MAP.values())
-)
-
-
 # read a logfile and convert it into absolute batch : loss traces.
 def parse(
     file_substring: str,
@@ -90,15 +87,17 @@ def parse(
     indexes = []
     losses = []
     file = f"{find_match(file_substring)}/{LOG_FILE}"
+    print(f"READING {file}")
     for line in open(file, "r", encoding="utf-8").readlines():
         sb, b, loss = line.split(",")
-        sb, b = int(sb), int(b)
+        sb, b = int(sb) - 1, int(b) - 32
         loss = float(loss)
         batch = BATCHES_PER_SB * sb + b
         indexes.append(batch)
         losses.append(loss)
-    indexes = indexes[(SKIP_SUPERBATCHES * BATCHES_PER_SB // LOG_INCREMENT) :]
-    losses = losses[(SKIP_SUPERBATCHES * BATCHES_PER_SB // LOG_INCREMENT) :]
+    print(f"N: {len(indexes)} SB: {len(indexes) / 47}")
+    indexes = indexes[SKIP_DATAPOINTS:]
+    losses = losses[SKIP_DATAPOINTS:]
     return np.array(indexes), np.array(losses)
 
 
@@ -122,16 +121,20 @@ def ema(x: np.ndarray, alpha: float = EMA_ALPHA) -> np.ndarray:
 
 
 def draw_single_curve(subplot, name: str, indexes: np.ndarray, losses: np.ndarray):
+    indexes = indexes / BATCHES_PER_SB
+    if RENORMALISE_FRACTIONAL:
+        indexes -= min(indexes)
+        indexes /= max(indexes)
     if SHOW_RAW:
         (raw,) = subplot.plot(
-            indexes / BATCHES_PER_SB,
+            indexes,
             losses,
             alpha=0.2,
             lw=0.8,
             label="_nolegend_",
         )
         subplot.plot(
-            indexes / BATCHES_PER_SB,
+            indexes,
             ema(losses),
             color=raw.get_color(),
             lw=1.5,
@@ -139,7 +142,7 @@ def draw_single_curve(subplot, name: str, indexes: np.ndarray, losses: np.ndarra
             zorder=3,
         )
     else:
-        subplot.plot(indexes / BATCHES_PER_SB, ema(losses), label=name)
+        subplot.plot(indexes, ema(losses), label=name)
 
 
 def draw_absolute(subplot, stage: str, data: dict[str, tuple[np.ndarray, np.ndarray]]):
@@ -206,6 +209,8 @@ def main():
         ax.set_visible(False)
 
     plt.show()
+    plt.savefig("opt-plot.svg")
+    plt.savefig("opt-plot.png")
 
 
 if __name__ == "__main__":
