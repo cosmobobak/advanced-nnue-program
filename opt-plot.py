@@ -29,10 +29,10 @@ SUFFIXES: dict[str, str] = {
 }
 
 # TESTS: list[str] = [
-#     "excitement-0.2-lr1",
-#     "excitement-0.2-lr0.5",
-#     "excitement-0.2-lr0.25",
 #     "excitement-0.2-lr0.125",
+#     "excitement-0.2-lr0.25",
+#     "excitement-0.2-lr0.5",
+#     "excitement-0.2-lr1",
 #     "excitement-0.2-lr2",
 #     "excitement-0.2-lr4",
 # ]
@@ -44,11 +44,13 @@ TESTS: list[str] = [
     "juice-0.5",
     "juice-1",
     "juice-2",
-    # "juice-4",
+    "juice-4",
 ]
 
 BASELINE: str | None = None
-# BASELINE: str | None = TESTS[0]
+# BASELINE: str | None = "sandhi"
+# BASELINE: str | None = "juice-1"
+# BASELINE: str | None = "excitement-0.2-lr1"
 
 EMA_ALPHA: float = 0.05
 
@@ -56,7 +58,7 @@ SKIP_DATAPOINTS: int = 50
 
 SHOW_RAW: bool = True
 
-RENORMALISE_FRACTIONAL: bool = True
+RENORMALISE_FRACTIONAL: bool = False
 
 LOG_Y: bool = True
 
@@ -234,7 +236,9 @@ def draw(subplot, stage: str, data: dict[str, tuple[np.ndarray, np.ndarray]]):
 
     subplot.grid(False)
     subplot.set_title(stage)
-    subplot.set_xlabel("superbatch" if not RENORMALISE_FRACTIONAL else "training run progress")
+    subplot.set_xlabel(
+        "superbatch" if not RENORMALISE_FRACTIONAL else "training run progress"
+    )
     subplot.ticklabel_format(axis="x", style="sci", scilimits=(0, 4))
 
 
@@ -243,7 +247,7 @@ def main():
     fig, axes = plt.subplots(
         nrows, PLOT_SIDE_LEN, layout="constrained", figsize=(12, 7)
     )
-    axs = list(axes.flat)
+    axs = list(axes.flat) if len(SUFFIXES) != 1 else [axes]
 
     for ax, (stage, data) in zip(axs, DATA_MAP.items()):
         draw(ax, stage, data)
