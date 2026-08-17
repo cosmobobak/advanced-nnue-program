@@ -20,6 +20,9 @@ Activations:
     swish           f(x) = x * sigmoid(x)
     hard-swish      f(x) = x * clamp(x + 3, 0, 6) / 6
 
+Options:
+    --minimal, -m   bare centred axes, no labels or ticks
+
 Example:
     uv run scripts/plot_activation.py screlu --output screlu.png
 """
@@ -29,6 +32,9 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+# looks best
+LINEWIDTH = 2.5
 
 ACTIVATIONS = {
     "identity": lambda x: x,
@@ -47,7 +53,7 @@ def plot_activation(name: str, output_path: Path | None, minimal: bool) -> None:
     x = np.linspace(-6, 6, 1000)
     y = ACTIVATIONS[name](x)
 
-    ax.plot(x, y, color="black", linewidth=1.5)
+    ax.plot(x, y, color="black", linewidth=LINEWIDTH)
 
     ax.set_xlim(-6, 6)
     ax.set_ylim(-6, 6)
@@ -62,9 +68,9 @@ def plot_activation(name: str, output_path: Path | None, minimal: bool) -> None:
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_color("black")
-    ax.spines["left"].set_linewidth(1.5)
+    ax.spines["left"].set_linewidth(LINEWIDTH)
     ax.spines["bottom"].set_color("black")
-    ax.spines["bottom"].set_linewidth(1.5)
+    ax.spines["bottom"].set_linewidth(LINEWIDTH)
 
     ax.tick_params(colors="black")
     ax.grid(False)
