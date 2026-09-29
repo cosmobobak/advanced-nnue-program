@@ -1,5 +1,6 @@
 import os
-from math import sqrt, ceil, floor, log10
+from math import ceil, floor, log10, sqrt
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MultipleLocator, NullLocator, ScalarFormatter
@@ -8,7 +9,9 @@ plt.rcParams["font.family"] = "TX-02"
 
 plt.style.use("dark_background")
 
-CHECKPOINT_DIR = "/home/cosmo/bullet/hp-sweep"
+CHECKPOINT_DIR = "/home/cosmo/bullet/checkpoints"
+# CHECKPOINT_DIR = "/home/cosmo/bullet/hp-sweep"
+# CHECKPOINT_DIR = "/home/cosmo/bullet/galileo-tests"
 LOG_FILE = "log.txt"
 
 # this is dependent on in-trainer config, and may need changed.
@@ -20,49 +23,107 @@ BATCH_INCREMENT = 32
 # datapoints logged per superbatch.
 # would be BATCHES_PER_SB / BATCH_INCREMENT
 # but grouping is imperfect.
-DATAPOINTS_PER_SB = 47
+DATAPOINTS_PER_SB = 48
 
 SUFFIXES: dict[str, str] = {
     "-s0": "Stage 0",
     "-s1": "Stage 1",
-    "-s2": "Stage 2",
+    # "-s2": "Stage 2",
+    # "-val": "Validation",
+    # "": "Run"
 }
 
-# TESTS: list[str] = [
-#     "excitement-0.2-lr0.125",
-#     "excitement-0.2-lr0.25",
-#     "excitement-0.2-lr0.5",
-#     "excitement-0.2-lr1",
-#     "excitement-0.2-lr2",
-#     "excitement-0.2-lr4",
-# ]
-
 TESTS: list[str] = [
-    "juice-0.05",
-    "juice-0.1",
-    "juice-0.2",
-    "juice-0.5",
-    "juice-1",
-    "juice-2",
-    "juice-4",
+    # "sandhi",
+    # "sapient",
+    # "deadeye",
+    # "clipeye",
+    # "lazarus",
+    # "sandeye",
+    # "sandeye2",
+    # "diplopia-train",
+    # "diplopia-val",
+    # "eleison",
+    # "sandhi-s2",
+    # "sandhi-val",
+    # "nemmerle",
+    # "acolyte",
+    # "hyperion",
+    "tethys",
+    "hyperion",
+    "galileo",
+    "earthsea",
+    "nous",
+    # "galileo-base",
+    # "galileo-base-apriori",
 ]
 
+# TESTS: list[str] = [
+# "excitement-0.2-lr0.125",
+# "excitement-0.2-lr0.25",
+# "excitement-0.2-lr0.5",
+# "excitement-0.2-lr1",
+# "excitement-0.2-lr2",
+# "excitement-0.2-lr4",
+# "blind-0.2-lr0.125",
+# "blind-0.2-lr0.25",
+# "blind-0.2-lr0.5",
+# "blind-0.2-lr1",
+# "blind-0.2-lr2",
+# "blind2-0.2-lr0.125",
+# "blind2-0.2-lr0.25",
+# "blind2-0.2-lr0.5",
+# "blind2-0.2-lr1",
+# "blind2-0.2-lr2",
+# "blind2-0.2-lr4",
+# "blind3-0.2-lr0.125",
+# "blind3-0.2-lr0.25",
+# "blind3-0.2-lr0.375",
+# "blind3-0.2-lr0.5",
+# "blind3-0.2-lr0.75",
+# "blind3-0.2-lr1",
+# "blind3-0.2-lr2",
+# "blind3-0.2-lr4",
+# "blind3-0.2-lrconst0.5noresetc",
+# "blind3-0.2-lrconst1",
+# "blind3-0.2-lrconst2",
+# "blind3-0.2-lrconst0.5",
+# "blind4-0.2-lr0.5",
+# "blind4-0.2-lr1",
+# "blind4-0.2-lr2",
+# "blind4-0.2-lr3",
+# "blind4-0.2-lr4",
+# "blind4-0.2-lr5",
+# "blind4-0.2-lr6",
+# "blind4-0.2-lr10",
+# ]
+
+# TESTS: list[str] = [
+#     "juice-0.05",
+#     "juice-0.1",
+#     "juice-0.2",
+#     "juice-0.5",
+#     "juice-1",
+#     "juice-2",
+#     "juice-4",
+# ]
+
 BASELINE: str | None = None
-# BASELINE: str | None = "sandhi"
+BASELINE: str | None = "tethys"
 # BASELINE: str | None = "juice-1"
 # BASELINE: str | None = "excitement-0.2-lr1"
 
-EMA_ALPHA: float = 0.05
+EMA_ALPHA: float = 0.005
 
-SKIP_DATAPOINTS: int = 50
+SKIP_DATAPOINTS: int = DATAPOINTS_PER_SB * 2
 
 SHOW_RAW: bool = True
 
 RENORMALISE_FRACTIONAL: bool = False
 
-LOG_Y: bool = True
+LOG_Y: bool = False
 
-CONTINUOUS_PALETTE: bool = True
+CONTINUOUS_PALETTE: bool = False
 CONTINUOUS_CMAP: str = "inferno"
 
 # the log format is <superbatch>,<batch-within-superbatch>,<loss>
@@ -234,7 +295,7 @@ def draw(subplot, stage: str, data: dict[str, tuple[np.ndarray, np.ndarray]]):
     else:
         draw_baseline(subplot, stage, data)
 
-    subplot.grid(False)
+    # subplot.grid(False)
     subplot.set_title(stage)
     subplot.set_xlabel(
         "superbatch" if not RENORMALISE_FRACTIONAL else "training run progress"
